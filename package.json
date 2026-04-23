@@ -1,0 +1,9 @@
+{
+  "name": "money-pattern-mirror",
+  "version": "1.0.0",
+  "description": "Money Pattern Mirror — T. Harv Eker lead magnet quiz",
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  }
+}

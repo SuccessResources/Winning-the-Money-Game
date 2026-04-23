@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Money Pattern Mirror — Winning the Money Game</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fraunces:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+/* ── RESET & TOKENS ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --green:      #259c5b;
+  --green-deep: #0f3d24;
+  --green-soft: #e6f5ef;
+  --ink:        #0a0a0a;
+  --ink-soft:   #4a4a4a;
+  --ink-lite:   #7a7a7a;
+  --line:       #e4e2dd;
+  --paper:      #ffffff;
+  --cream:      #f7f5f0;
+  --ease:       cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+html { font-size: 16px; height: 100%; }
+body {
+  font-family: 'Inter', -apple-system, sans-serif;
+  color: var(--ink);
+  background: var(--ink);
+  min-height: 100%;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* ── LAYOUT ── */
+.shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Background grain + gradient */
+.shell::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 65% 55% at 15% 90%, rgba(37,156,91,0.16), transparent 60%),
+    radial-gradient(ellipse 50% 50% at 85% 10%, rgba(37,156,91,0.10), transparent 55%);
+  pointer-events: none;
+}
+
+/* ── NAV ── */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 48px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  background: rgba(10,10,10,0.6);
+  backdrop-filter: blur(16px);
+}
+.nav-logo {
+  display: flex; align-items: center; gap: 10px;
+  text-decoration: none;
+}
+.nav-logo-mark { width: 28px; height: 28px; color: var(--green); }
+.nav-logo-mark svg { width: 100%; height: 100%; display: block; }
+.nav-logo-text {
+  font-weight: 800; font-size: 13px;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  color: rgba(255,255,255,0.9);
+}
+.nav-trust {
+  font-size: 11px; color: rgba(255,255,255,0.4);
+  display: flex; align-items: center; gap: 8px;
+  letter-spacing: 0.04em;
+}
+.nav-trust-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--green); opacity: 0.7;
+}
+
+/* ── PROGRESS BAR ── */
+.progress-bar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  height: 3px; background: rgba(255,255,255,0.08);
+}
+.progress-fill {
+  height: 100%; background: var(--green);
+  transition: width 600ms var(--ease);
+  box-shadow: 0 0 12px rgba(37,156,91,0.6);
+}
+
+/* ── SCREENS ── */
+.screen {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  padding: 100px 24px 48px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(24px);
+  transition: opacity 500ms var(--ease), transform 500ms var(--ease);
+  z-index: 1;
+}
+.screen.active {
+  opacity: 1;
+  pointer-events: all;
+  transform: translateY(0);
+  position: relative;
+}
+.screen.exit {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-24px);
+  position: absolute;
+}
+
+/* ── WELCOME SCREEN ── */
+.welcome-inner {
+  max-width: 640px;
+  text-align: center;
+}
+.welcome-eyebrow {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.28em; text-transform: uppercase;
+  color: var(--green);
+  display: inline-flex; align-items: center; gap: 10px;
+  margin-bottom: 28px;
+}
+.welcome-eyebrow::before,
+.welcome-eyebrow::after { content: ''; width: 20px; height: 1px; background: var(--green); }
+.welcome-h1 {
+  font-family: 'Fraunces', serif;
+  font-weight: 300; font-style: italic;
+  font-size: clamp(40px, 6vw, 68px);
+  line-height: 1.05; letter-spacing: -0.02em;
+  color: #fff;
+  margin-bottom: 20px;
+}
+.welcome-h1 strong {
+  font-style: normal; font-weight: 700;
+  color: var(--green);
+}
+.welcome-sub {
+  font-size: 17px; line-height: 1.65;
+  color: rgba(255,255,255,0.65);
+  font-weight: 300;
+  margin-bottom: 48px;
+}
+.welcome-meta {
+  display: flex; justify-content: center; gap: 32px;
+  margin-bottom: 40px;
+}
+.welcome-meta-item {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.welcome-meta-num {
+  font-weight: 800; font-size: 22px; color: #fff;
+  letter-spacing: -0.03em;
+}
+.welcome-meta-label {
+  font-size: 11px; color: rgba(255,255,255,0.4);
+  letter-spacing: 0.06em; text-transform: uppercase;
+}
+.welcome-disclaimer {
+  font-size: 12px; color: rgba(255,255,255,0.3);
+  margin-top: 16px;
+  line-height: 1.6;
+}
+
+/* ── QUESTION SCREEN ── */
+.question-inner {
+  max-width: 680px;
+  width: 100%;
+}
+.q-step {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--green);
+  margin-bottom: 16px;
+  display: flex; align-items: center; gap: 12px;
+}
+.q-step-line { flex: 1; height: 1px; background: rgba(255,255,255,0.08); max-width: 60px; }
+.q-scenario-label {
+  font-size: 11px; font-weight: 500;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+  margin-bottom: 14px;
+}
+.q-text {
+  font-family: 'Fraunces', serif;
+  font-weight: 300;
+  font-size: clamp(22px, 3.5vw, 32px);
+  line-height: 1.25; letter-spacing: -0.01em;
+  color: #fff;
+  margin-bottom: 8px;
+}
+.q-sub {
+  font-size: 15px; color: rgba(255,255,255,0.5);
+  font-weight: 300; line-height: 1.6;
+  margin-bottom: 36px;
+}
+
+.options {
+  display: flex; flex-direction: column; gap: 10px;
+}
+.option {
+  display: flex; align-items: flex-start; gap: 16px;
+  padding: 18px 20px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 250ms, border-color 250ms, transform 250ms;
+  text-align: left;
+  color: inherit;
+  font-family: inherit;
+  width: 100%;
+}
+.option:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.18);
+  transform: translateX(4px);
+}
+.option.selected {
+  background: rgba(37,156,91,0.12);
+  border-color: var(--green);
+}
+.option-letter {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.15);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700;
+  color: rgba(255,255,255,0.5);
+  flex-shrink: 0;
+  transition: all 250ms;
+}
+.option.selected .option-letter {
+  background: var(--green); border-color: var(--green);
+  color: #fff;
+}
+.option-text {
+  font-size: 15px; line-height: 1.55;
+  color: rgba(255,255,255,0.75);
+  font-weight: 300;
+  transition: color 250ms;
+}
+.option.selected .option-text { color: #fff; }
+
+/* ── EMAIL CAPTURE SCREEN ── */
+.capture-inner {
+  max-width: 540px;
+  width: 100%;
+  text-align: center;
+}
+.capture-eyebrow {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.28em; text-transform: uppercase;
+  color: var(--green);
+  display: inline-flex; align-items: center; gap: 10px;
+  margin-bottom: 24px;
+}
+.capture-eyebrow::before,
+.capture-eyebrow::after { content: ''; width: 20px; height: 1px; background: var(--green); }
+.capture-h2 {
+  font-family: 'Fraunces', serif;
+  font-weight: 300; font-style: italic;
+  font-size: clamp(28px, 4vw, 42px);
+  line-height: 1.15; letter-spacing: -0.02em;
+  color: #fff;
+  margin-bottom: 12px;
+}
+.capture-sub {
+  font-size: 15px; color: rgba(255,255,255,0.55);
+  font-weight: 300; line-height: 1.6;
+  margin-bottom: 36px;
+}
+.form-group {
+  display: flex; flex-direction: column; gap: 12px;
+  margin-bottom: 16px;
+}
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.input-wrap { position: relative; }
+.input-label {
+  display: block;
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+  margin-bottom: 6px;
+  text-align: left;
+}
+.form-input {
+  width: 100%;
+  padding: 14px 18px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 6px;
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px; font-weight: 400;
+  transition: border-color 250ms, background 250ms;
+  outline: none;
+}
+.form-input::placeholder { color: rgba(255,255,255,0.25); }
+.form-input:focus {
+  border-color: var(--green);
+  background: rgba(255,255,255,0.07);
+}
+.form-input.error { border-color: #e05555; }
+.capture-privacy {
+  font-size: 11px; color: rgba(255,255,255,0.25);
+  margin-top: 12px; line-height: 1.6;
+}
+.capture-privacy a { color: rgba(255,255,255,0.4); }
+
+/* ── CALCULATING SCREEN ── */
+.calc-inner {
+  text-align: center;
+  max-width: 480px;
+}
+.calc-animation {
+  width: 80px; height: 80px;
+  margin: 0 auto 32px;
+  position: relative;
+}
+.calc-ring {
+  width: 80px; height: 80px;
+  border: 2px solid rgba(255,255,255,0.08);
+  border-top-color: var(--green);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.calc-icon {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--green);
+}
+.calc-h2 {
+  font-family: 'Fraunces', serif;
+  font-weight: 300; font-style: italic;
+  font-size: 32px; color: #fff;
+  letter-spacing: -0.02em;
+  margin-bottom: 12px;
+}
+.calc-steps {
+  display: flex; flex-direction: column; gap: 8px;
+  margin-top: 24px;
+}
+.calc-step {
+  font-size: 13px; color: rgba(255,255,255,0.35);
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: color 400ms;
+}
+.calc-step.done { color: var(--green); }
+.calc-step-check {
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  border: 1px solid currentColor;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.calc-step.done .calc-step-check {
+  background: var(--green); border-color: var(--green);
+}
+
+/* ── BUTTONS ── */
+.btn-primary {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 16px 32px;
+  background: var(--green); color: #fff;
+  border: none; border-radius: 999px;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px; font-weight: 500;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(37,156,91,0.35);
+  transition: transform 250ms var(--ease), box-shadow 250ms, background 250ms;
+  text-decoration: none;
+}
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(37,156,91,0.45);
+  background: #1e8049;
+}
+.btn-primary:disabled {
+  opacity: 0.4; cursor: not-allowed;
+}
+.btn-primary .arrow { transition: transform 250ms var(--ease); }
+.btn-primary:hover:not(:disabled) .arrow { transform: translateX(4px); }
+
+.btn-next {
+  margin-top: 28px;
+  width: 100%;
+}
+
+/* ── MOBILE ── */
+@media (max-width: 640px) {
+  .nav { padding: 16px 20px; }
+  .nav-trust { display: none; }
+  .screen { padding: 88px 20px 40px; }
+  .welcome-meta { gap: 20px; }
+  .form-row { grid-template-columns: 1fr; }
+  .q-text { font-size: 22px; }
+  .option { padding: 14px 16px; }
+  .option-text { font-size: 14px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Progress bar -->
+<div class="progress-bar">
+  <div class="progress-fill" id="progressFill" style="width:0%"></div>
+</div>
+
+<!-- Nav -->
+<nav class="nav">
+  <a href="/" class="nav-logo">
+    <div class="nav-logo-mark">
+      <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="16" cy="16" r="14" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M16 8v4M16 20v4M8 16h4M20 16h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <circle cx="16" cy="16" r="3.5" fill="currentColor"/>
+      </svg>
+    </div>
+    <span class="nav-logo-text">Money Pattern Mirror</span>
+  </a>
+  <div class="nav-trust">
+    <span class="nav-trust-dot"></span>
+    Part of Winning the Money Game · T. Harv Eker
+  </div>
+</nav>
+
+<!-- SHELL -->
+<div class="shell" id="shell">
+
+  <!-- ── SCREEN 0: WELCOME ── -->
+  <div class="screen active" id="screen-welcome">
+    <div class="welcome-inner">
+      <div class="welcome-eyebrow">Money Pattern Mirror</div>
+      <h1 class="welcome-h1">
+        Your income isn't<br>the problem.<br>
+        <strong>Your blueprint is.</strong>
+      </h1>
+      <p class="welcome-sub">
+        Answer 6 real-world scenarios honestly — there are no right or wrong answers.
+        In 3 minutes, you'll know exactly which money pattern is running your financial decisions.
+      </p>
+      <div class="welcome-meta">
+        <div class="welcome-meta-item">
+          <span class="welcome-meta-num">6</span>
+          <span class="welcome-meta-label">Scenarios</span>
+        </div>
+        <div class="welcome-meta-item">
+          <span class="welcome-meta-num">3</span>
+          <span class="welcome-meta-label">Minutes</span>
+        </div>
+        <div class="welcome-meta-item">
+          <span class="welcome-meta-num">4</span>
+          <span class="welcome-meta-label">Patterns</span>
+        </div>
+        <div class="welcome-meta-item">
+          <span class="welcome-meta-num">1.5M+</span>
+          <span class="welcome-meta-label">Graduates</span>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="startQuiz()">
+        Begin Assessment <span class="arrow">→</span>
+      </button>
+      <p class="welcome-disclaimer">
+        No right or wrong answers. Your result is your roadmap to<br>
+        <strong style="color:rgba(255,255,255,0.65)">Winning the Money Game.</strong>
+      </p>
+    </div>
+  </div>
+
+  <!-- ── SCREENS 1–6: QUESTIONS (generated by JS) ── -->
+
+  <!-- ── SCREEN 7: EMAIL CAPTURE ── -->
+  <div class="screen" id="screen-capture">
+    <div class="capture-inner">
+      <div class="capture-eyebrow">Almost there</div>
+      <h2 class="capture-h2">Where should we<br>send your report?</h2>
+      <p class="capture-sub">
+        Your personalised pattern report will be waiting for you — including your dominant pattern,
+        blind spot, and 3 concrete shifts to make this week.
+      </p>
+      <div class="form-group">
+        <div class="form-row">
+          <div class="input-wrap">
+            <label class="input-label" for="firstName">First Name</label>
+            <input class="form-input" type="text" id="firstName" placeholder="Sarah" autocomplete="given-name">
+          </div>
+          <div class="input-wrap">
+            <label class="input-label" for="lastName">Last Name</label>
+            <input class="form-input" type="text" id="lastName" placeholder="Mitchell" autocomplete="family-name">
+          </div>
+        </div>
+        <div class="input-wrap">
+          <label class="input-label" for="email">Email Address</label>
+          <input class="form-input" type="email" id="email" placeholder="sarah@example.com" autocomplete="email">
+        </div>
+      </div>
+      <button class="btn-primary" style="width:100%" onclick="submitCapture()">
+        Show My Pattern Report <span class="arrow">→</span>
+      </button>
+      <p class="capture-privacy">
+        Your report is private. We'll also send you a 7-day pattern-specific email series.
+        No spam, unsubscribe anytime.
+      </p>
+    </div>
+  </div>
+
+  <!-- ── SCREEN 8: CALCULATING ── -->
+  <div class="screen" id="screen-calc">
+    <div class="calc-inner">
+      <div class="calc-animation">
+        <div class="calc-ring"></div>
+        <div class="calc-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 2v4M12 18v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M2 12h4M18 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+          </svg>
+        </div>
+      </div>
+      <h2 class="calc-h2">Analysing your pattern…</h2>
+      <div class="calc-steps" id="calcSteps">
+        <div class="calc-step" id="cs1">
+          <div class="calc-step-check">
+            <svg width="8" height="8" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 5l2.5 2.5L8 3"/></svg>
+          </div>
+          Mapping your 6 scenario responses
+        </div>
+        <div class="calc-step" id="cs2">
+          <div class="calc-step-check">
+            <svg width="8" height="8" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 5l2.5 2.5L8 3"/></svg>
+          </div>
+          Scoring across 4 pattern dimensions
+        </div>
+        <div class="calc-step" id="cs3">
+          <div class="calc-step-check">
+            <svg width="8" height="8" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 5l2.5 2.5L8 3"/></svg>
+          </div>
+          Identifying dominant and secondary pattern
+        </div>
+        <div class="calc-step" id="cs4">
+          <div class="calc-step-check">
+            <svg width="8" height="8" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 5l2.5 2.5L8 3"/></svg>
+          </div>
+          Generating your personalised report
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /shell -->
+
+<script>
+/* ═══════════════════════════════════════════════
+   DATA: 6 QUESTIONS × 4 OPTIONS
+   Pattern keys: A=Avoider, G=Guardian, P=PleasureSeeker, B=Builder
+   Each option also maps to a dimension score delta
+═══════════════════════════════════════════════ */
+const QUESTIONS = [
+  {
+    id: 1,
+    scenario: "Scenario 01 · Unexpected windfall",
+    text: "You receive an unexpected $5,000 bonus. What's your first instinct?",
+    sub: "Don't overthink it — go with your gut reaction, not what you think you should do.",
+    options: [
+      { letter: "A", pattern: "A", text: "I'll figure out what to do with it later. I park it in my regular account and move on." },
+      { letter: "B", pattern: "G", text: "I transfer it straight to savings — I need to know it's safe before I think about anything else." },
+      { letter: "C", pattern: "P", text: "I've been working hard. I'll use it for something that lets me enjoy life — a trip, a treat, or a gift for family." },
+      { letter: "D", pattern: "B", text: "I allocate it immediately — 70% invested, 20% into a specific goal, 10% to spend guilt-free." }
+    ]
+  },
+  {
+    id: 2,
+    scenario: "Scenario 02 · Monthly statement",
+    text: "Your bank statement arrives. Be honest — what actually happens?",
+    sub: "This is one of the most revealing questions. Go with what you really do, not what you intend to do.",
+    options: [
+      { letter: "A", pattern: "A", text: "I glance at the total balance, feel vaguely uneasy, then close it. I'll look properly another time." },
+      { letter: "B", pattern: "G", text: "I check every single transaction. If anything unexpected came out, I feel stressed for the rest of the day." },
+      { letter: "C", pattern: "P", text: "I check if I can cover what I need this month. As long as it looks okay, I move on." },
+      { letter: "D", pattern: "B", text: "I review it against my monthly targets — income in, key outgoings, savings rate, investment contributions." }
+    ]
+  },
+  {
+    id: 3,
+    scenario: "Scenario 03 · Investment opportunity",
+    text: "A trusted friend shares an investment opportunity with a solid 12–15% annual return. What do you do?",
+    sub: "Assume the opportunity is legitimate and your friend has done their homework.",
+    options: [
+      { letter: "A", pattern: "A", text: "I thank them and say I'll look into it. I mean to, but weeks pass and I never follow up." },
+      { letter: "B", pattern: "G", text: "I'm immediately cautious. Even if it sounds good, the risk feels too high — I'd rather keep what I have safe." },
+      { letter: "C", pattern: "P", text: "I'm interested, but I'd need to check my account. Lately my spending has been high, so I probably don't have much to invest." },
+      { letter: "D", pattern: "B", text: "I research it thoroughly. If the fundamentals hold up, I'd move quickly and invest from my allocated investment budget." }
+    ]
+  },
+  {
+    id: 4,
+    scenario: "Scenario 04 · End of month",
+    text: "It's the last day of the month. How do you honestly feel about your finances right now?",
+    sub: "No filtering — what's the real, uncensored emotional experience?",
+    options: [
+      { letter: "A", pattern: "A", text: "Vaguely anxious. I'm not sure exactly where the money went, but I don't really want to find out." },
+      { letter: "B", pattern: "G", text: "Checking my savings balance. If it went up, I feel okay. If I had to use any of it, I feel stressed." },
+      { letter: "C", pattern: "P", text: "A good month, mostly. A bit thin toward the end but I enjoyed it. Next month I'll be more careful." },
+      { letter: "D", pattern: "B", text: "I know exactly where I stand. I review my numbers and update my plan for next month." }
+    ]
+  },
+  {
+    id: 5,
+    scenario: "Scenario 05 · The direct question",
+    text: "Someone asks you: \"Do you have a financial plan?\" What's your honest reaction?",
+    sub: "Imagine a respected friend or mentor asking this face-to-face.",
+    options: [
+      { letter: "A", pattern: "A", text: "A flash of shame. I deflect or change the subject. I know I should — I just haven't gotten there yet." },
+      { letter: "B", pattern: "G", text: "I have a savings plan and I stick to it — but it's more about protecting what I have than building toward something big." },
+      { letter: "C", pattern: "P", text: "I believe in living well now. Plans feel restrictive — I don't want to spend my life worrying about the future." },
+      { letter: "D", pattern: "B", text: "Yes. I have a written plan with income goals, investment targets, and a 5-year wealth vision I review regularly." }
+    ]
+  },
+  {
+    id: 6,
+    scenario: "Scenario 06 · The pay rise",
+    text: "You receive a 20% pay rise. Over the next six months, what actually happens to your lifestyle?",
+    sub: "Be honest about the pattern — not the intention.",
+    options: [
+      { letter: "A", pattern: "A", text: "The money gets absorbed into daily life somehow. I'm not really sure where the extra went." },
+      { letter: "B", pattern: "G", text: "I immediately increase my savings contribution by the same amount. The lifestyle stays exactly the same." },
+      { letter: "C", pattern: "P", text: "I upgrade — a better apartment, nicer dinners, a holiday I've been putting off. I've earned it." },
+      { letter: "D", pattern: "B", text: "I keep the lifestyle identical and direct the entire rise into investments. This is how compounding works." }
+    ]
+  }
+];
+
+/* ═══════════════════════════════════════════════
+   PATTERN METADATA — used to build report URL
+═══════════════════════════════════════════════ */
+const PATTERNS = {
+  A: {
+    key: "avoider",
+    name: "The Avoider",
+    phase: "Foundation Phase",
+    // Dimension scores: awareness, planning, action, wealthbuild, control, resilience (each 1–5)
+    dims: { aw: 2, pl: 1, ac: 2, wb: 1, ct: 2, rs: 3 }
+  },
+  G: {
+    key: "guardian",
+    name: "The Guardian",
+    phase: "Foundation → Growth",
+    dims: { aw: 3, pl: 2, ac: 2, wb: 2, ct: 4, rs: 3 }
+  },
+  P: {
+    key: "pleasureseeker",
+    name: "The Pleasure Seeker",
+    phase: "Growth Phase",
+    dims: { aw: 3, pl: 2, ac: 3, wb: 2, ct: 2, rs: 3 }
+  },
+  B: {
+    key: "builder",
+    name: "The Builder",
+    phase: "Wealth Architect",
+    dims: { aw: 5, pl: 5, ac: 5, wb: 5, ct: 5, rs: 4 }
+  }
+};
+
+/* ═══════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════ */
+let currentScreen = "welcome";
+let currentQ = 0;
+let answers = []; // array of pattern keys: "A","G","P","B"
+
+/* ═══════════════════════════════════════════════
+   SCREEN MANAGEMENT
+═══════════════════════════════════════════════ */
+function showScreen(id) {
+  const current = document.querySelector(".screen.active");
+  if (current) {
+    current.classList.remove("active");
+    current.classList.add("exit");
+    setTimeout(() => current.classList.remove("exit"), 500);
+  }
+  setTimeout(() => {
+    const next = document.getElementById(id);
+    if (next) next.classList.add("active");
+    window.scrollTo(0, 0);
+  }, 200);
+  currentScreen = id;
+  updateProgress();
+}
+
+function updateProgress() {
+  const total = QUESTIONS.length + 3; // welcome + questions + capture + calc
+  let step = 0;
+  if (currentScreen === "screen-welcome") step = 0;
+  else if (currentScreen.startsWith("screen-q")) step = parseInt(currentScreen.split("-q")[1]);
+  else if (currentScreen === "screen-capture") step = QUESTIONS.length + 1;
+  else if (currentScreen === "screen-calc") step = QUESTIONS.length + 2;
+  const pct = (step / total) * 100;
+  document.getElementById("progressFill").style.width = pct + "%";
+}
+
+/* ═══════════════════════════════════════════════
+   QUIZ FLOW
+═══════════════════════════════════════════════ */
+function startQuiz() {
+  renderQuestion(0);
+  showScreen("screen-q0");
+}
+
+function renderQuestion(index) {
+  const q = QUESTIONS[index];
+  const id = `screen-q${index}`;
+
+  // Remove if already exists
+  const existing = document.getElementById(id);
+  if (existing) existing.remove();
+
+  const div = document.createElement("div");
+  div.className = "screen";
+  div.id = id;
+  div.innerHTML = `
+    <div class="question-inner">
+      <div class="q-step">
+        Question ${q.id} of ${QUESTIONS.length}
+        <span class="q-step-line"></span>
+      </div>
+      <div class="q-scenario-label">${q.scenario}</div>
+      <h2 class="q-text">${q.text}</h2>
+      <p class="q-sub">${q.sub}</p>
+      <div class="options" id="options-${index}">
+        ${q.options.map((opt, i) => `
+          <button class="option" data-pattern="${opt.pattern}" data-q="${index}" onclick="selectOption(this, ${index}, '${opt.pattern}')">
+            <div class="option-letter">${opt.letter}</div>
+            <div class="option-text">${opt.text}</div>
+          </button>
+        `).join('')}
+      </div>
+      <button class="btn-primary btn-next" id="btn-next-${index}" disabled onclick="nextStep(${index})">
+        ${index < QUESTIONS.length - 1 ? 'Next Question <span class="arrow">→</span>' : 'Almost done <span class="arrow">→</span>'}
+      </button>
+    </div>
+  `;
+
+  // Pre-fill if returning
+  if (answers[index]) {
+    const opts = div.querySelectorAll(".option");
+    opts.forEach(o => {
+      if (o.dataset.pattern === answers[index]) o.classList.add("selected");
+    });
+    div.querySelector(`#btn-next-${index}`).disabled = false;
+  }
+
+  document.getElementById("shell").appendChild(div);
+}
+
+function selectOption(el, qIndex, pattern) {
+  // Deselect all options in this question
+  document.querySelectorAll(`#options-${qIndex} .option`).forEach(o => o.classList.remove("selected"));
+  el.classList.add("selected");
+  answers[qIndex] = pattern;
+  document.getElementById(`btn-next-${qIndex}`).disabled = false;
+}
+
+function nextStep(qIndex) {
+  if (!answers[qIndex]) return;
+
+  if (qIndex < QUESTIONS.length - 1) {
+    // Next question
+    const nextIndex = qIndex + 1;
+    renderQuestion(nextIndex);
+    showScreen(`screen-q${nextIndex}`);
+  } else {
+    // All done — show capture
+    showScreen("screen-capture");
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   EMAIL CAPTURE + SCORING
+═══════════════════════════════════════════════ */
+function submitCapture() {
+  const firstName = document.getElementById("firstName").value.trim();
+  const lastName  = document.getElementById("lastName").value.trim();
+  const email     = document.getElementById("email").value.trim();
+
+  // Validation
+  let valid = true;
+  ["firstName","lastName","email"].forEach(id => {
+    const el = document.getElementById(id);
+    el.classList.remove("error");
+    if (!el.value.trim()) { el.classList.add("error"); valid = false; }
+  });
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    document.getElementById("email").classList.add("error");
+    valid = false;
+  }
+  if (!valid) return;
+
+  showScreen("screen-calc");
+  runCalcAnimation(firstName, lastName, email);
+}
+
+function runCalcAnimation(firstName, lastName, email) {
+  const steps = ["cs1","cs2","cs3","cs4"];
+  const delays = [600, 1200, 1900, 2600];
+
+  delays.forEach((delay, i) => {
+    setTimeout(() => {
+      document.getElementById(steps[i]).classList.add("done");
+    }, delay);
+  });
+
+  setTimeout(() => {
+    const result = calculatePattern();
+    submitToAPI(firstName, lastName, email, result);
+    redirectToReport(firstName, result);
+  }, 3600);
+}
+
+/* ═══════════════════════════════════════════════
+   SCORING ENGINE
+═══════════════════════════════════════════════ */
+function calculatePattern() {
+  // Count votes per pattern
+  const counts = { A: 0, G: 0, P: 0, B: 0 };
+  answers.forEach(a => { if (counts[a] !== undefined) counts[a]++; });
+
+  // Sort to find dominant + secondary
+  const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]);
+  const dominantKey  = sorted[0][0];
+  const secondaryKey = sorted[1][0];
+
+  // Compute blended dimension scores
+  // Each pattern contributes its dim scores weighted by vote count
+  const dims = { aw: 0, pl: 0, ac: 0, wb: 0, ct: 0, rs: 0 };
+  const total = answers.length;
+  Object.entries(counts).forEach(([k, v]) => {
+    if (v === 0) return;
+    const weight = v / total;
+    const p = PATTERNS[k].dims;
+    Object.keys(dims).forEach(d => { dims[d] += p[d] * weight; });
+  });
+  // Round to 1 dp
+  Object.keys(dims).forEach(d => { dims[d] = Math.round(dims[d] * 10) / 10; });
+
+  return {
+    dominant:  PATTERNS[dominantKey],
+    secondary: PATTERNS[secondaryKey],
+    counts,
+    dims
+  };
+}
+
+/* ═══════════════════════════════════════════════
+   REDIRECT TO REPORT
+═══════════════════════════════════════════════ */
+function redirectToReport(firstName, result) {
+  const params = new URLSearchParams({
+    pattern:   result.dominant.key,
+    name:      firstName,
+    secondary: result.secondary.key,
+    aw: result.dims.aw,
+    pl: result.dims.pl,
+    ac: result.dims.ac,
+    wb: result.dims.wb,
+    ct: result.dims.ct,
+    rs: result.dims.rs,
+  });
+  /* On Vercel: /report  |  Local file testing: report.html */
+  const base = window.location.protocol === 'file:' ? 'report.html' : '/report';
+  window.location.href = `${base}?${params.toString()}`;
+}
+
+/* ═══════════════════════════════════════════════
+   API CALL — POST TO /api/submit
+═══════════════════════════════════════════════ */
+async function submitToAPI(firstName, lastName, email, result) {
+  try {
+    await fetch("/api/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        firstName,
+        lastName,
+        email,
+        pattern:   result.dominant.key,
+        patternName: result.dominant.name,
+        secondary: result.secondary.key,
+        scores:    result.counts,
+        dims:      result.dims,
+        answers,
+        completedAt: new Date().toISOString()
+      })
+    });
+  } catch(e) {
+    // Fail silently — report still loads
+    console.warn("API submission failed:", e);
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════ */
+updateProgress();
+</script>
+</body>
+</html>

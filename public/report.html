@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Money Pattern Mirror Result — Winning the Money Game</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fraunces:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green:      #259c5b;
+  --green-deep: #0f3d24;
+  --green-soft: #e6f5ef;
+  --ink:        #0a0a0a;
+  --ink-soft:   #4a4a4a;
+  --ink-lite:   #7a7a7a;
+  --line:       #e4e2dd;
+  --paper:      #ffffff;
+  --cream:      #f7f5f0;
+  --gold:       #c19a5b;
+  --gold-soft:  #f5edd8;
+  --accent:     #259c5b; /* overridden per pattern by JS */
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', -apple-system, sans-serif;
+  color: var(--ink);
+  background: var(--cream);
+  -webkit-font-smoothing: antialiased;
+}
+@media print {
+  .no-print { display: none !important; }
+  body { background: #fff; }
+}
+
+/* ── PRINT BAR ── */
+.print-bar {
+  background: var(--ink); padding: 14px 48px;
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 16px;
+}
+.print-bar p { font-size: 13px; color: rgba(255,255,255,0.55); }
+.print-bar p strong { color: #fff; }
+.btn-print {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 18px;
+  background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 999px; color: #fff; font-size: 12px; font-weight: 500;
+  cursor: pointer; transition: background 200ms; white-space: nowrap;
+}
+.btn-print:hover { background: rgba(255,255,255,0.18); }
+
+/* ── PAGE ── */
+.page { max-width: 860px; margin: 32px auto; background: var(--paper); box-shadow: 0 4px 60px rgba(0,0,0,0.08); border-radius: 4px; overflow: hidden; }
+
+/* ── COVER ── */
+.cover { background: var(--ink); padding: 56px 64px 64px; position: relative; overflow: hidden; }
+.cover::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse 55% 60% at 80% 0%, rgba(37,156,91,0.2), transparent 60%),
+              radial-gradient(ellipse 40% 40% at 10% 100%, rgba(37,156,91,0.1), transparent 55%);
+  pointer-events: none;
+}
+.cover-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 60px; position: relative; z-index: 1; }
+.cover-logo-mark { width: 30px; height: 30px; color: var(--green); }
+.cover-logo-mark svg { width: 100%; height: 100%; }
+.cover-logo-text { font-weight: 800; font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(255,255,255,0.85); }
+
+.cover-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.28em; text-transform: uppercase; color: var(--green); display: flex; align-items: center; gap: 12px; margin-bottom: 24px; position: relative; z-index: 1; }
+.cover-eyebrow::before { content: ''; width: 24px; height: 1px; background: var(--green); }
+
+.cover-name-greeting { font-size: 14px; color: rgba(255,255,255,0.5); margin-bottom: 8px; position: relative; z-index: 1; letter-spacing: 0.04em; }
+.cover-pattern-name { font-family: 'Fraunces', serif; font-weight: 300; font-style: italic; font-size: clamp(52px, 7vw, 80px); line-height: 0.95; letter-spacing: -0.03em; color: #fff; margin-bottom: 6px; position: relative; z-index: 1; }
+.cover-pattern-name .accent-word { color: var(--accent); font-style: italic; }
+.cover-pattern-sub { font-size: 13px; color: rgba(255,255,255,0.45); letter-spacing: 0.04em; margin-bottom: 40px; position: relative; z-index: 1; }
+
+/* Phase progress bar */
+.phase-bar { display: flex; align-items: center; gap: 0; max-width: 400px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 999px; padding: 5px; margin-bottom: 40px; position: relative; z-index: 1; }
+.phase-node { flex: 1; display: flex; align-items: center; justify-content: center; gap: 5px; padding: 7px 12px; border-radius: 999px; font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(255,255,255,0.35); white-space: nowrap; }
+.phase-node.active { background: var(--accent); color: #fff; }
+
+.cover-desc { font-size: 16px; line-height: 1.65; color: rgba(255,255,255,0.7); font-weight: 300; max-width: 580px; margin-bottom: 36px; position: relative; z-index: 1; }
+.cover-desc strong { color: #fff; font-weight: 600; }
+.cover-meta { display: flex; gap: 28px; padding-top: 28px; border-top: 1px solid rgba(255,255,255,0.1); position: relative; z-index: 1; flex-wrap: wrap; }
+.cover-meta-item { display: flex; flex-direction: column; gap: 3px; }
+.cover-meta-label { font-size: 9px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(255,255,255,0.35); }
+.cover-meta-value { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.85); }
+.cover-meta-tag { display: inline-flex; background: var(--green-soft); color: var(--green-deep); padding: 2px 8px; border-radius: 999px; font-size: 10px; font-weight: 700; }
+
+/* ── SECTIONS ── */
+.section { padding: 52px 64px; border-bottom: 1px solid var(--line); }
+.section:last-child { border-bottom: none; }
+.section-alt { background: var(--cream); }
+.section-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.28em; text-transform: uppercase; color: var(--accent); display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+.section-eyebrow::before { content: ''; width: 22px; height: 1px; background: var(--accent); }
+.section-title { font-family: 'Fraunces', serif; font-weight: 400; font-size: clamp(26px, 3.2vw, 38px); line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 14px; color: var(--ink); }
+.section-title em { font-style: italic; color: var(--accent); }
+.section-intro { font-size: 15px; line-height: 1.7; color: var(--ink-soft); font-weight: 300; max-width: 580px; margin-bottom: 32px; }
+
+/* Belief box */
+.belief-box { background: var(--ink); border-radius: 6px; padding: 36px 44px; position: relative; overflow: hidden; }
+.belief-box::before { content: '"'; font-family: 'Fraunces', serif; font-size: 180px; line-height: 0.7; position: absolute; top: -5px; left: 24px; color: var(--accent); opacity: 0.18; pointer-events: none; }
+.belief-quote { font-family: 'Fraunces', serif; font-weight: 300; font-style: italic; font-size: clamp(20px, 2.6vw, 28px); line-height: 1.35; letter-spacing: -0.01em; color: #fff; position: relative; z-index: 1; margin-bottom: 16px; }
+.belief-label { font-size: 11px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(255,255,255,0.35); position: relative; z-index: 1; }
+.belief-label span { color: var(--accent); }
+
+/* Fingerprint */
+.fp-wrap { display: grid; grid-template-columns: 260px 1fr; gap: 40px; align-items: center; }
+.fp-labels { display: flex; flex-direction: column; gap: 14px; }
+.fp-row { display: flex; align-items: center; gap: 12px; }
+.fp-row-text { font-size: 12px; font-weight: 500; color: var(--ink-soft); width: 120px; flex-shrink: 0; }
+.fp-track { flex: 1; height: 5px; background: var(--line); border-radius: 999px; overflow: hidden; }
+.fp-fill { height: 100%; border-radius: 999px; background: var(--accent); transition: width 800ms cubic-bezier(0.2,0.8,0.2,1); }
+.fp-fill.low { background: #e05555; }
+.fp-fill.mid { background: var(--gold); }
+.fp-fill.high { background: var(--accent); }
+.fp-score { font-size: 11px; font-weight: 700; color: var(--ink-lite); width: 24px; text-align: right; flex-shrink: 0; }
+
+/* Two col cards */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.insight-card { padding: 28px; border-radius: 4px; border: 1px solid var(--line); }
+.insight-card.blind { border-left: 3px solid #e05555; }
+.insight-card.strength { border-left: 3px solid var(--accent); }
+.insight-label { font-size: 10px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; margin-bottom: 10px; }
+.insight-card.blind .insight-label { color: #e05555; }
+.insight-card.strength .insight-label { color: var(--accent); }
+.insight-card h4 { font-family: 'Fraunces', serif; font-weight: 400; font-size: 20px; line-height: 1.2; letter-spacing: -0.02em; margin-bottom: 8px; color: var(--ink); }
+.insight-card p { font-size: 13.5px; line-height: 1.65; color: var(--ink-soft); font-weight: 300; }
+
+/* Shifts */
+.shifts { display: flex; flex-direction: column; }
+.shift { display: grid; grid-template-columns: 44px 1fr; gap: 20px; padding: 28px 0; border-bottom: 1px solid var(--line); align-items: start; }
+.shift:last-child { border-bottom: none; }
+.shift-num { font-family: 'Fraunces', serif; font-size: 44px; line-height: 0.9; font-weight: 300; color: var(--accent); }
+.shift h4 { font-weight: 700; font-size: 16px; letter-spacing: -0.02em; color: var(--ink); margin-bottom: 6px; }
+.shift p { font-size: 14px; line-height: 1.65; color: var(--ink-soft); font-weight: 300; margin-bottom: 10px; }
+.shift-action { display: inline-flex; align-items: center; gap: 6px; background: var(--green-soft); color: var(--green-deep); padding: 5px 12px; border-radius: 999px; font-size: 11.5px; font-weight: 600; }
+.shift-action::before { content: '→'; }
+
+/* Blueprint */
+.blueprint { display: grid; grid-template-columns: repeat(3,1fr); gap: 2px; border-radius: 6px; overflow: hidden; }
+.bp-phase { padding: 24px 20px; background: var(--cream); }
+.bp-phase.current { background: var(--ink); }
+.bp-phase.locked { opacity: 0.5; filter: grayscale(0.4); position: relative; }
+.bp-label { font-size: 9px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-lite); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+.bp-phase.current .bp-label { color: rgba(255,255,255,0.4); }
+.bp-badge { padding: 2px 7px; border-radius: 999px; background: var(--green-soft); color: var(--green-deep); font-size: 9px; font-weight: 700; }
+.bp-phase.current .bp-badge { background: var(--accent); color: #fff; }
+.bp-phase h4 { font-family: 'Fraunces', serif; font-weight: 400; font-size: 18px; line-height: 1.2; letter-spacing: -0.02em; color: var(--ink); margin-bottom: 10px; }
+.bp-phase.current h4 { color: #fff; }
+.bp-phase ul { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+.bp-phase ul li { font-size: 12px; line-height: 1.5; color: var(--ink-soft); display: flex; align-items: flex-start; gap: 6px; }
+.bp-phase.current ul li { color: rgba(255,255,255,0.6); }
+.bp-phase ul li::before { content: '·'; color: var(--accent); font-weight: 900; font-size: 16px; line-height: 1.1; flex-shrink: 0; }
+
+/* CTA section */
+.cta-section { text-align: center; padding: 64px 64px; background: var(--ink); position: relative; overflow: hidden; }
+.cta-section::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 55% 60% at 50% 100%, rgba(37,156,91,0.2), transparent 70%); pointer-events: none; }
+.cta-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.28em; text-transform: uppercase; color: var(--accent); display: inline-flex; align-items: center; gap: 10px; margin-bottom: 18px; position: relative; z-index: 1; }
+.cta-eyebrow::before, .cta-eyebrow::after { content: ''; width: 22px; height: 1px; background: var(--accent); }
+.cta-section h2 { font-family: 'Fraunces', serif; font-weight: 300; font-style: italic; font-size: clamp(26px, 3.5vw, 40px); line-height: 1.1; letter-spacing: -0.02em; color: #fff; margin-bottom: 14px; position: relative; z-index: 1; }
+.cta-section h2 em { font-style: normal; color: var(--accent); }
+.cta-section p { font-size: 15px; line-height: 1.65; color: rgba(255,255,255,0.6); font-weight: 300; max-width: 460px; margin: 0 auto 28px; position: relative; z-index: 1; }
+.btn-cta { display: inline-flex; align-items: center; gap: 10px; padding: 16px 32px; background: var(--accent); color: #fff; border: none; border-radius: 999px; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; text-decoration: none; box-shadow: 0 6px 24px rgba(37,156,91,0.4); position: relative; z-index: 1; transition: transform 250ms, box-shadow 250ms; }
+.btn-cta:hover { transform: translateY(-2px); }
+.cta-meta { margin-top: 12px; font-size: 11px; color: rgba(255,255,255,0.3); letter-spacing: 0.04em; position: relative; z-index: 1; }
+
+.report-footer { padding: 24px 64px; background: var(--cream); border-top: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--ink-lite); letter-spacing: 0.06em; }
+.report-footer strong { color: var(--ink); }
+</style>
+</head>
+<body>
+
+<!-- Print bar -->
+<div class="print-bar no-print">
+  <p><strong>Money Pattern Mirror</strong> · Your roadmap to <strong>Winning the Money Game</strong> — Save this report.</p>
+  <button class="btn-print" onclick="window.print()">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+    Save as PDF
+  </button>
+</div>
+
+<div class="page" id="reportPage">
+  <!-- Content injected by JS -->
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════
+   PATTERN DATA — all 4 patterns
+═══════════════════════════════════════════════ */
+const PATTERNS = {
+  avoider: {
+    name: "The Avoider",
+    accent: "#259c5b",
+    phase: "Foundation Phase",
+    phaseIndex: 0,
+    secondary: "",
+    coverDesc: "You've been telling yourself you're just <strong>\"bad with numbers.\"</strong> You're not. You have a pattern — and every pattern has a name, a logic, and a path forward. This report gives you all three.",
+    belief: "If I don't look at it, I don't have to deal with it — and if I don't deal with it, it can't really be that bad.",
+    dims: { aw: 2, pl: 1, ac: 2, wb: 1, ct: 2, rs: 3 },
+    blind: {
+      title: "You optimise for emotional safety, not financial reality",
+      body: "Avoiders equate 'not knowing' with 'not worrying.' The belief is that ignorance protects — but the unpaid bill, the uninvested savings, and the missed opportunity compound silently. The anxiety doesn't disappear. It just gets deferred with interest."
+    },
+    strength: {
+      title: "Rapid transformation once the first honest look is taken",
+      body: "Avoiders consistently report dramatic change once they face their actual numbers. The avoidance isn't stubbornness — it's anxiety. Remove the anxiety, and a fast-moving, motivated wealth builder often emerges. The fear was the only thing in the way."
+    },
+    shifts: [
+      {
+        title: "Name every account and write down the balance",
+        body: "Not to judge it. Not to fix it. Just to look. The Avoider's breakthrough almost always begins with a single honest look at the actual numbers. You can't change what you won't face.",
+        action: "This Monday — 15 minutes, pen and paper"
+      },
+      {
+        title: "Set a recurring 'Money Date' in your calendar",
+        body: "Every Sunday, 20 minutes. Open your banking app, check your three key numbers (income in, biggest outgoing, savings balance), and write one sentence about the week. Consistency over complexity.",
+        action: "Schedule it now — before you close this report"
+      },
+      {
+        title: "Write the one financial decision you've been deferring",
+        body: "Every Avoider has a specific thing they know they need to do but haven't. A pension that's not set up. A debt that hasn't been faced. Name it in writing. Naming converts a floating anxiety into a solvable problem.",
+        action: "Write it on the back of this report"
+      }
+    ],
+    blueprint: [
+      { label: "Days 1–30", badge: "You are here", title: "Foundation", current: true, items: ["Face the numbers with no judgement", "Establish the weekly money date habit", "Identify the one biggest avoided decision", "Separate emotion from information"] },
+      { label: "Days 31–60", title: "Growth Builder", items: ["Create a simple one-page financial plan", "Automate one savings or investment action", "Set a 90-day wealth target", "Build your first financial identity statement"] },
+      { label: "Days 61–90", title: "Wealth Architect", locked: true, items: ["Implement the 6-jar money management system", "Review investments and passive income sources", "Set 1-year and 5-year wealth goals", "Enrol in MMI for full reprogramming"] }
+    ]
+  },
+
+  guardian: {
+    name: "The Guardian",
+    accent: "#c19a5b",
+    phase: "Foundation → Growth",
+    phaseIndex: 0,
+    coverDesc: "Your savings account is safe. <strong>But safe and growing are not the same thing.</strong> You've been protecting what you have so carefully that you've forgotten to multiply it. This report shows you the cost of standing still.",
+    belief: "There will never be enough — so I must protect what I have rather than risk losing it.",
+    dims: { aw: 3, pl: 2, ac: 2, wb: 2, ct: 4, rs: 3 },
+    blind: {
+      title: "Inflation is silently spending your savings for you",
+      body: "Guardians mistake inaction for safety. But every year your cash savings sit still, inflation reduces their real value. The risk you're trying to avoid is already happening — you just can't see it on your statement."
+    },
+    strength: {
+      title: "Exceptional discipline and consistency once pointed at growth",
+      body: "The Guardian's greatest asset is their reliability. They save consistently, spend carefully, and honour commitments. That same discipline, redirected from hoarding to building, is exactly what wealth accumulation requires."
+    },
+    shifts: [
+      {
+        title: "Invest a fixed percentage automatically — remove the decision",
+        body: "Set up an automatic monthly transfer to an investment account. Make it happen before you can second-guess it. The Guardian's enemy is the decision moment — automation eliminates it entirely.",
+        action: "Set up the auto-transfer this week"
+      },
+      {
+        title: "Define what 'enough security' actually looks like as a number",
+        body: "Guardians often hoard because 'enough' is undefined — there's no number that ever feels safe. Write down the exact emergency fund amount that would make you feel genuinely secure. Once that's reached, the rest goes to growth.",
+        action: "Write your 'enough' number today"
+      },
+      {
+        title: "Read one story of a Guardian who made the shift",
+        body: "Identity precedes behaviour. Before you can act like an investor, you need to believe you are one. Find one real case study of someone with your pattern who became a wealth builder. The story matters more than the strategy.",
+        action: "Find and read one story this week"
+      }
+    ],
+    blueprint: [
+      { label: "Days 1–30", badge: "You are here", title: "Foundation → Growth", current: true, items: ["Define your security number precisely", "Set up one automatic investment", "Separate 'protection funds' from 'growth funds'", "Acknowledge the cost of standing still"] },
+      { label: "Days 31–60", title: "Growth Builder", items: ["Increase investment allocation by 5%", "Research one asset class you've been avoiding", "Set a first wealth milestone with a deadline", "Join a community of growth-minded investors"] },
+      { label: "Days 61–90", title: "Wealth Architect", locked: true, items: ["Build a diversified portfolio allocation", "Create multiple income streams", "Review and rebalance quarterly", "Enrol in MMI for full reprogramming"] }
+    ]
+  },
+
+  pleasureseeker: {
+    name: "The Pleasure Seeker",
+    accent: "#4a7cc7",
+    phase: "Growth Phase",
+    phaseIndex: 1,
+    coverDesc: "You earn well, you work hard, and you enjoy your life. There's nothing wrong with any of that. <strong>The problem is that your future self isn't in the room when you make spending decisions.</strong> This report introduces them.",
+    belief: "I work hard — I deserve to enjoy my money now. The future will take care of itself.",
+    dims: { aw: 3, pl: 2, ac: 3, wb: 2, ct: 2, rs: 3 },
+    blind: {
+      title: "Every raise gets spent before it gets invested",
+      body: "Pleasure Seekers are often high earners who never accumulate wealth because lifestyle inflation tracks income perfectly. The gap between what you earn and what you keep never widens. More income just means more to spend."
+    },
+    strength: {
+      title: "High earning capacity, generosity, and social intelligence",
+      body: "Pleasure Seekers are typically driven, socially skilled, and capable of significant income generation. These qualities, combined with even basic wealth-building discipline, create compounding results that austere savers never achieve."
+    },
+    shifts: [
+      {
+        title: "Pay future-you first before lifestyle spending touches the income",
+        body: "On payday, automatically move your investment contribution before you see the number. The Pleasure Seeker's rule: future-you gets paid before present-you makes decisions. What you don't see, you don't spend.",
+        action: "Set up the investment auto-debit for payday"
+      },
+      {
+        title: "Calculate your actual savings rate this month",
+        body: "Not what you think it is. The actual number: (income - spending) ÷ income × 100. Most Pleasure Seekers are shocked by how low it is. The awareness itself is the intervention.",
+        action: "Calculate it tonight — 10 minutes"
+      },
+      {
+        title: "Create one non-negotiable no-spend rule for 30 days",
+        body: "Not a full budget. Just one rule. Pick the category where your spending is most impulsive and make it off-limits for 30 days. The goal is proving to yourself that you can, not permanent deprivation.",
+        action: "Write the rule and tell one person about it"
+      }
+    ],
+    blueprint: [
+      { label: "Days 1–30", badge: "You are here", title: "Growth Phase", current: true, items: ["Calculate your real savings rate", "Set up income-triggered auto-investment", "Identify your highest-impulse spending category", "Create one 30-day spending boundary"] },
+      { label: "Days 31–60", title: "Growth Builder", items: ["Increase savings rate by 5 percentage points", "Track net worth weekly (not just spending)", "Create a 'pleasure fund' with a defined ceiling", "Set a 12-month wealth milestone"] },
+      { label: "Days 61–90", title: "Wealth Architect", locked: true, items: ["Build passive income that funds lifestyle", "Create wealth that enables more freedom", "Define 'financial independence' as a specific number", "Enrol in MMI for full reprogramming"] }
+    ]
+  },
+
+  builder: {
+    name: "The Builder",
+    accent: "#259c5b",
+    phase: "Wealth Architect",
+    phaseIndex: 2,
+    coverDesc: "You think in systems. You invest consistently. You track your net worth, not just your income. <strong>The question isn't whether you're building wealth — it's whether you've defined what you're building it for.</strong>",
+    belief: "Money is a tool for freedom, impact, and multiplication. More is always better.",
+    dims: { aw: 5, pl: 5, ac: 5, wb: 5, ct: 5, rs: 4 },
+    blind: {
+      title: "Accumulating without a 'enough' number can become its own trap",
+      body: "Builders are often so focused on the next milestone that they never arrive anywhere. The wealth grows but the feeling of 'enough' never comes. The accumulation becomes the purpose rather than the means — and relationships, health, and presence often pay the price."
+    },
+    strength: {
+      title: "Systems thinking, patience, and the ability to delay gratification",
+      body: "These are the rarest combination in personal finance. Most people understand compound interest intellectually. Builders actually live it. The same qualities that built the wealth can also build a life of genuine freedom — if pointed deliberately."
+    },
+    shifts: [
+      {
+        title: "Define your Wealth Number — what does 'financially free' actually mean?",
+        body: "Write down the exact net worth or passive income figure at which you would feel genuinely financially free. Without this number, wealth-building has no destination. A goal without a target is just motion.",
+        action: "Write your Wealth Number this week"
+      },
+      {
+        title: "Build or formalise your first passive income stream this quarter",
+        body: "Active income stops when you stop working. Passive income compounds. If you haven't already, this quarter build or formalise one income stream that doesn't require your direct labour to generate returns.",
+        action: "Define and start this quarter"
+      },
+      {
+        title: "Create a Giving Plan alongside your Wealth Plan",
+        body: "The research on wealth and wellbeing consistently shows that giving is one of the highest-return uses of wealth — for the giver. Builders who define a giving practice alongside a wealth target report significantly higher life satisfaction.",
+        action: "Write your Giving Plan this month"
+      }
+    ],
+    blueprint: [
+      { label: "Days 1–30", title: "Growth Builder", items: ["Define your Wealth Number precisely", "Formalise your investment allocation", "Set a 12-month net worth target", "Audit all active income sources"] },
+      { label: "Days 31–60", title: "Wealth Architect", badge: "You are here", current: true, items: ["Build or formalise passive income stream", "Create your Giving Plan", "Define 'enough' and what comes after it", "Review and optimise all investment vehicles"] },
+      { label: "Days 61–90", title: "Legacy Builder", locked: true, items: ["Design a legacy giving strategy", "Build tax-efficient wealth structures", "Create generational wealth planning", "Attend MMI to maximise every dimension"] }
+    ]
+  }
+};
+
+/* ═══════════════════════════════════════════════
+   READ URL PARAMS
+═══════════════════════════════════════════════ */
+const params = new URLSearchParams(window.location.search);
+const patternKey = (params.get('pattern') || 'avoider').toLowerCase().replace(/[^a-z]/g,'');
+const firstName  = params.get('name') || '';
+const secondaryKey = params.get('secondary') || '';
+const dims = {
+  aw: parseFloat(params.get('aw')) || null,
+  pl: parseFloat(params.get('pl')) || null,
+  ac: parseFloat(params.get('ac')) || null,
+  wb: parseFloat(params.get('wb')) || null,
+  ct: parseFloat(params.get('ct')) || null,
+  rs: parseFloat(params.get('rs')) || null,
+};
+
+const P = PATTERNS[patternKey] || PATTERNS.avoider;
+const secondaryName = PATTERNS[secondaryKey] ? PATTERNS[secondaryKey].name : '';
+
+/* Override CSS accent colour per pattern */
+document.documentElement.style.setProperty('--accent', P.accent);
+
+/* Derive dim scores: use URL params if present, else pattern defaults */
+const scores = {
+  aw: dims.aw !== null ? dims.aw : P.dims.aw,
+  pl: dims.pl !== null ? dims.pl : P.dims.pl,
+  ac: dims.ac !== null ? dims.ac : P.dims.ac,
+  wb: dims.wb !== null ? dims.wb : P.dims.wb,
+  ct: dims.ct !== null ? dims.ct : P.dims.ct,
+  rs: dims.rs !== null ? dims.rs : P.dims.rs,
+};
+
+/* Score bar helper */
+function scoreClass(v) {
+  if (v <= 2) return 'low';
+  if (v <= 3.5) return 'mid';
+  return 'high';
+}
+function scorePct(v) { return Math.round((v / 5) * 100) + '%'; }
+
+/* Phase bar HTML */
+const phases = ['Foundation', 'Growth Builder', 'Wealth Architect'];
+const phaseBar = phases.map((ph, i) =>
+  `<div class="phase-node ${i === P.phaseIndex ? 'active' : ''}">${ph}</div>`
+).join('');
+
+/* Blueprint HTML */
+const bpHTML = P.blueprint.map(bp => `
+  <div class="bp-phase ${bp.current ? 'current' : ''} ${bp.locked ? 'locked' : ''}">
+    <div class="bp-label">${bp.label} ${bp.badge ? `<span class="bp-badge">${bp.badge}</span>` : ''}</div>
+    <h4>${bp.title}</h4>
+    <ul>${bp.items.map(i => `<li>${i}</li>`).join('')}</ul>
+  </div>
+`).join('');
+
+/* Shifts HTML */
+const shiftsHTML = P.shifts.map((s, i) => `
+  <div class="shift">
+    <div class="shift-num">${i + 1}</div>
+    <div>
+      <h4>${s.title}</h4>
+      <p>${s.body}</p>
+      <span class="shift-action">${s.action}</span>
+    </div>
+  </div>
+`).join('');
+
+/* Render */
+document.getElementById('reportPage').innerHTML = `
+  <!-- COVER -->
+  <div class="cover">
+    <div class="cover-logo">
+      <div class="cover-logo-mark">
+        <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="16" r="14" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M16 8v4M16 20v4M8 16h4M20 16h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="16" cy="16" r="3.5" fill="currentColor"/>
+        </svg>
+      </div>
+      <span class="cover-logo-text">Winning the Money Game</span>
+    </div>
+    <div class="cover-eyebrow">Your Result</div>
+    ${firstName ? `<div class="cover-name-greeting">For ${firstName} —</div>` : ''}
+    <div class="cover-pattern-name">${P.name.replace('The ', 'The <span class="accent-word">').replace(/([A-Z][a-z]+ [A-Z][a-z]+|[A-Z][a-z]+)$/, (m) => m + '</span>')}</div>
+    <div class="cover-pattern-sub">Primary Pattern${secondaryName ? ` · Secondary: ${secondaryName}` : ''}</div>
+    <div class="phase-bar">${phaseBar}</div>
+    <p class="cover-desc">${P.coverDesc}</p>
+    <div class="cover-meta">
+      <div class="cover-meta-item">
+        <span class="cover-meta-label">Generated</span>
+        <span class="cover-meta-value">${new Date().toLocaleDateString('en-GB', {day:'numeric',month:'long',year:'numeric'})}</span>
+      </div>
+      <div class="cover-meta-item">
+        <span class="cover-meta-label">Phase</span>
+        <span class="cover-meta-value"><span class="cover-meta-tag">${P.phase}</span></span>
+      </div>
+      <div class="cover-meta-item">
+        <span class="cover-meta-label">Programme</span>
+        <span class="cover-meta-value">T. Harv Eker · MMI</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CORE BELIEF -->
+  <div class="section">
+    <div class="section-eyebrow">Your Core Money Belief</div>
+    <h2 class="section-title">The story running <em>underneath</em></h2>
+    <p class="section-intro">Every financial behaviour is driven by a belief formed before the age of seven. For ${P.name.replace('The ','')}s, that belief sounds like this:</p>
+    <div class="belief-box">
+      <p class="belief-quote">"${P.belief}"</p>
+      <div class="belief-label">${P.name} · <span>${P.phase}</span></div>
+    </div>
+  </div>
+
+  <!-- FINGERPRINT -->
+  <div class="section section-alt">
+    <div class="section-eyebrow">Pattern Fingerprint</div>
+    <h2 class="section-title">How your pattern <em>scores</em></h2>
+    <p class="section-intro">Your six scenario responses mapped to these six financial dimensions. This is your unique fingerprint — no judgement, just data.</p>
+    <div class="fp-wrap">
+      <svg viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:240px">
+        <g fill="none" stroke="#e4e2dd" stroke-width="1">
+          <polygon points="120,20 206,70 206,170 120,220 34,170 34,70"/>
+          <polygon points="120,43 185,81 185,159 120,197 55,159 55,81"/>
+          <polygon points="120,66 163,91 163,149 120,174 77,149 77,91"/>
+          <polygon points="120,89 142,102 142,138 120,151 98,138 98,102"/>
+        </g>
+        <g stroke="#e4e2dd" stroke-width="1">
+          <line x1="120" y1="20" x2="120" y2="220"/>
+          <line x1="206" y1="70" x2="34" y2="170"/>
+          <line x1="206" y1="170" x2="34" y2="70"/>
+        </g>
+        ${(()=>{
+          // Compute hexagon points based on scores
+          const s = scores;
+          const pcts = [s.aw/5, s.pl/5, s.ac/5, s.wb/5, s.ct/5, s.rs/5];
+          // 6 axis endpoints (from centre 120,120):
+          const axes = [[120,20],[206,70],[206,170],[120,220],[34,170],[34,70]];
+          const cx = 120, cy = 120;
+          const pts = pcts.map((p, i) => {
+            const ax = axes[i];
+            return [(cx + (ax[0]-cx)*p).toFixed(1), (cy + (ax[1]-cy)*p).toFixed(1)];
+          });
+          return `<polygon points="${pts.map(p=>p.join(',')).join(' ')}" fill="${P.accent}22" stroke="${P.accent}" stroke-width="1.5" stroke-linejoin="round"/>
+          ${pts.map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="3" fill="${P.accent}"/>`).join('')}`;
+        })()}
+        <text x="120" y="12" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" font-weight="600" fill="#7a7a7a" letter-spacing="0.08em">AWARENESS</text>
+        <text x="218" y="72" text-anchor="start" font-family="Inter,sans-serif" font-size="8" font-weight="600" fill="#7a7a7a" letter-spacing="0.08em">PLANNING</text>
+        <text x="218" y="174" text-anchor="start" font-family="Inter,sans-serif" font-size="8" font-weight="600" fill="#7a7a7a" letter-spacing="0.08em">ACTION</text>
+        <text x="120" y="234" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" font-weight="600" fill="#7a7a7a" letter-spacing="0.08em">WEALTH BUILD</text>
+        <text x="22" y="174" text-anchor="end" font-family="Inter,sans-serif" font-size="8" font-weight="600" fill="#7a7a7a" letter-spacing="0.08em">CONTROL</text>
+        <text x="22" y="72" text-anchor="end" font-family="Inter,sans-serif" font-size="8" font-weight="600" fill="#7a7a7a" letter-spacing="0.08em">RESILIENCE</text>
+      </svg>
+      <div class="fp-labels">
+        ${[['Awareness','aw'],['Financial Planning','pl'],['Action Taking','ac'],['Wealth Building','wb'],['Financial Control','ct'],['Resilience','rs']].map(([label,key])=>`
+          <div class="fp-row">
+            <span class="fp-row-text">${label}</span>
+            <div class="fp-track"><div class="fp-fill ${scoreClass(scores[key])}" style="width:${scorePct(scores[key])}"></div></div>
+            <span class="fp-score">${scores[key]}/5</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  </div>
+
+  <!-- BLIND SPOT + STRENGTH -->
+  <div class="section">
+    <div class="section-eyebrow">What This Pattern Creates</div>
+    <h2 class="section-title">The shadow <em>and</em> the gift</h2>
+    <p class="section-intro">Every money pattern has a cost and a compensation. Knowing both is how you use the pattern instead of being used by it.</p>
+    <div class="two-col">
+      <div class="insight-card blind">
+        <div class="insight-label">⚑ Your Blind Spot</div>
+        <h4>${P.blind.title}</h4>
+        <p>${P.blind.body}</p>
+      </div>
+      <div class="insight-card strength">
+        <div class="insight-label">◎ Your Hidden Strength</div>
+        <h4>${P.strength.title}</h4>
+        <p>${P.strength.body}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3 SHIFTS -->
+  <div class="section section-alt">
+    <div class="section-eyebrow">This Week's Work</div>
+    <h2 class="section-title">3 shifts to <em>start with</em></h2>
+    <p class="section-intro">These are not a full programme. They are the entry point — the three things that interrupt the ${P.name.replace('The ','')} loop most reliably.</p>
+    <div class="shifts">${shiftsHTML}</div>
+  </div>
+
+  <!-- 90-DAY BLUEPRINT -->
+  <div class="section">
+    <div class="section-eyebrow">Your Growth Path</div>
+    <h2 class="section-title">The 90-day <em>blueprint</em></h2>
+    <p class="section-intro">There is a clear, research-backed path from where you are to Wealth Architect. Here are the three phases.</p>
+    <div class="blueprint">${bpHTML}</div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-section">
+    <div class="cta-eyebrow">Your Next Step</div>
+    <h2>Your Money Pattern Mirror result is<br>your roadmap to <em>Winning the Money Game.</em></h2>
+    <p>This report names the pattern. The free 90-minute live workshop shows you how to break it — and what Winning the Money Game actually looks like for your specific blueprint.</p>
+    <a href="https://millionairemindworld.com" class="btn-cta">Reserve My Free Workshop Seat →</a>
+    <p class="cta-meta">Winning the Money Game · Online · Live · Free for assessment takers</p>
+  </div>
+
+  <div class="report-footer">
+    <span><strong>Money Pattern Mirror</strong> · Part of <strong>Winning the Money Game</strong> · T. Harv Eker</span>
+    <span>© ${new Date().getFullYear()} Millionaire Mind Intensive · Confidential</span>
+  </div>
+`;
+
+/* Update page title */
+document.title = `Money Pattern Mirror: ${P.name} — Winning the Money Game`;
+</script>
+</body>
+</html>

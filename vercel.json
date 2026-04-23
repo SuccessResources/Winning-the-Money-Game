@@ -1,8 +1,8 @@
 {
   "outputDirectory": "public",
   "rewrites": [
-    { "source": "/report", "destination": "/results.html" },
-    { "source": "/quiz",   "destination": "/index.html"  }
+    { "source": "/quiz",   "destination": "/quiz.html"   },
+    { "source": "/report", "destination": "/report.html" }
   ],
   "headers": [
     {
